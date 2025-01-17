@@ -1,0 +1,7 @@
+{
+  "name": "Rider",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
