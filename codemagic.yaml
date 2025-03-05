@@ -1,0 +1,42 @@
+workflows:
+  ionic-ios:
+    name: Ionic iOS Build
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      vars:
+        NODE_VERSION: 18
+      xcode: latest
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: "*"
+          include: true
+          source: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build the Ionic project
+        script: |
+          ionic build
+      - name: Sync with Capacitor
+        script: |
+          npx cap sync ios
+      - name: Run iOS build
+        script: |
+          cd ios
+          if [ -f "App.xcworkspace" ]; then
+            xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $HOME/output/App.xcarchive
+          else
+            xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release archive -archivePath $HOME/output/App.xcarchive
+          fi
+    artifacts:
+      - $HOME/output/App.xcarchive
+      - ios/build/*.ipa
+    publishing:
+      email:
+        recipients:
+          - akrobom@gmail.com
