@@ -13,37 +13,17 @@
           </ion-card-header>
 
           <ion-card-content>
-            <ion-input
-              label="Name"
-              label-placement="floating"
-              fill="outline"
-              placeholder="Enter name"
-              class="input-field"
-            ></ion-input>
-            <ion-input
-              label="Phone"
-              label-placement="floating"
-              fill="outline"
-              placeholder="Enter phone number"
-              class="input-field"
-            ></ion-input>
-            <ion-input
-              label="Email"
-              label-placement="floating"
-              fill="outline"
-              placeholder="Enter email"
-              class="input-field"
-            ></ion-input>
-            <ion-input
-              type="password"
-              label="Password"
-              label-placement="floating"
-              fill="outline"
-              placeholder="Enter password"
-              class="input-field"
-            ></ion-input>
+            <ion-input v-model="name" label="Name" label-placement="floating" fill="outline" placeholder="Enter name" class="input-field"></ion-input>
+            <ion-input v-model="phone" label="Phone" label-placement="floating" fill="outline" placeholder="Enter phone number" class="input-field"></ion-input>
+            <ion-input v-model="email" label="Email" label-placement="floating" fill="outline" placeholder="Enter email" class="input-field"></ion-input>
+            <ion-input v-model="password" type="password" label="Password" label-placement="floating" fill="outline" placeholder="Enter password" class="input-field"></ion-input>
+            
+            <ion-button expand="block" @click="handleRegister" class="login-btn" :disabled="loading">
+              {{ loading ? 'Registering...' : 'Register' }}
+            </ion-button>
+            
+            <ion-label v-if="errorMessage" class="error-message">{{ errorMessage }}</ion-label>
 
-            <ion-button expand="block" @click="navigateToHome" class="login-btn">Register</ion-button>
 
             <ion-label class="register-label" @click="navigateToLogin">
               Already having an account? <span class="register-link">Login</span>
@@ -57,17 +37,38 @@
 
 <script setup lang="ts">
 import { IonPage, IonCard, IonInput, IonButton, IonCardHeader, IonLabel, IonCardTitle, IonCardSubtitle, IonCardContent, IonContent } from '@ionic/vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { registerUser } from '@/services/api';
 
 const router = useRouter();
+const name = ref('');
+const phone = ref('');
+const email = ref('');
+const password = ref('');
+const status = ref('rider'); // Set to "driver" for the driver page
+const loading = ref(false);
+const errorMessage = ref('');
+
 
 function navigateToLogin() {
   router.push('/login'); // Ensure '/register' route is defined in your router
 }
 
-function navigateToHome() {
-  router.push('/tabs/tab1'); // Ensure '/register' route is defined in your router
-}
+const handleRegister = async () => {
+  loading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const userData = { name: name.value, phone: phone.value, email: email.value, password: password.value, status: status.value };
+    await registerUser(userData);
+    router.push('/tabs/tab1'); // Redirect to login after successful registration
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Something went wrong!';
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <style scoped>
