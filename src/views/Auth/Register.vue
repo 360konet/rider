@@ -37,16 +37,17 @@
 
 <script setup lang="ts">
 import { IonPage, IonCard, IonInput, IonButton, IonCardHeader, IonLabel, IonCardTitle, IonCardSubtitle, IonCardContent, IonContent } from '@ionic/vue';
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 import { registerUser } from '@/services/api';
+
 
 const router = useRouter();
 const name = ref('');
 const phone = ref('');
 const email = ref('');
 const password = ref('');
-const status = ref('rider'); // Set to "driver" for the driver page
+const status = ref('rider'); // Set to "rider" for the driver page
 const loading = ref(false);
 const errorMessage = ref('');
 
@@ -56,19 +57,34 @@ function navigateToLogin() {
 }
 
 const handleRegister = async () => {
-  loading.value = true;
-  errorMessage.value = '';
+loading.value = true;
+errorMessage.value = '';
 
-  try {
-    const userData = { name: name.value, phone: phone.value, email: email.value, password: password.value, status: status.value };
-    await registerUser(userData);
-    router.push('/tabs/tab1'); // Redirect to login after successful registration
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Something went wrong!';
-  } finally {
-    loading.value = false;
+try {
+  const userData = { 
+    name: name.value, 
+    phone: phone.value, 
+    email: email.value, 
+    password: password.value, 
+    status: status.value 
+  };
+  
+  const response = await registerUser(userData);
+
+  if (response.token) {
+    localStorage.setItem('authToken', response.token); // Store token
+    localStorage.setItem('userId', response.user.id); // Store user ID
   }
+
+  router.push('/tabs/tab3'); // Redirect to car registration
+} catch (error: any) {
+  errorMessage.value = error.message || 'Something went wrong!';
+} finally {
+  loading.value = false;
+}
 };
+
+
 </script>
 
 <style scoped>
