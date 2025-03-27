@@ -57,32 +57,34 @@ function navigateToLogin() {
 }
 
 const handleRegister = async () => {
-loading.value = true;
-errorMessage.value = '';
+  loading.value = true;
+  errorMessage.value = '';
 
-try {
-  const userData = { 
-    name: name.value, 
-    phone: phone.value, 
-    email: email.value, 
-    password: password.value, 
-    status: status.value 
-  };
-  
-  const response = await registerUser(userData);
+  try {
+    const userData = { 
+      name: name.value, 
+      phone: phone.value, 
+      email: email.value, 
+      password: password.value, 
+      status: status.value 
+    };
 
-  if (response.token) {
-    localStorage.setItem('authToken', response.token); // Store token
-    localStorage.setItem('userId', response.user.id); // Store user ID
+    const response = await registerUser(userData);
+
+    if (response.token && response.user) {
+      localStorage.setItem('authToken', response.token); // Store token
+      localStorage.setItem('user_id', response.user.id); // Ensure correct key name is used
+    }
+
+    // Redirect with user ID in the route
+    router.push(`/tabs/tab3/${response.user.id}`);
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Something went wrong!';
+  } finally {
+    loading.value = false;
   }
-
-  router.push('/tabs/tab3'); // Redirect to car registration
-} catch (error: any) {
-  errorMessage.value = error.message || 'Something went wrong!';
-} finally {
-  loading.value = false;
-}
 };
+
 
 
 </script>

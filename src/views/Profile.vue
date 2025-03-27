@@ -89,12 +89,13 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { authAxios } from '@/services/api';
-
+import { useRoute } from 'vue-router';
 
 // State for user and vehicle
 const user = ref({});
 const vehicle = ref({});
-
+const route = useRoute();
+const userId = route.params.id || localStorage.getItem("user_id");
 const router = useRouter();
 
 const formatDate = (dateString) => {
@@ -141,7 +142,6 @@ const getStatusStyle = (status) => {
 
 const fetchProfile = async () => {
   try {
-    const userId = localStorage.getItem("user_id");
     if (!userId) {
       router.push("/login");
       return;

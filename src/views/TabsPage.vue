@@ -13,10 +13,11 @@
           <ion-label>Ride History</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab3" href="/tabs/tab3">
+        <ion-tab-button :href="`/tabs/tab3/${userId}`">
           <ion-icon aria-hidden="true" :icon="personOutline" />
           <ion-label>Profile</ion-label>
         </ion-tab-button>
+
       </ion-tab-bar>
     </ion-tabs>
   </ion-page>
@@ -25,6 +26,12 @@
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import { square, navigateOutline, personOutline, clipboardOutline } from 'ionicons/icons';
+
+import { useRoute } from 'vue-router';
+import { ref } from 'vue';
+
+const route = useRoute();
+const userId = ref(route.params.id);
 </script>
 
 <style scoped>

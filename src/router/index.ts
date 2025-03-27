@@ -24,7 +24,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/History.vue')
       },
       {
-        path: 'tab3',
+        path: 'tab3/:id',
         component: () => import('@/views/Profile.vue')
       }
     ]

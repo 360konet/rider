@@ -29,9 +29,23 @@
             <ion-button @click="checkPath('car')">Car</ion-button>
             <ion-button @click="checkPath('bike')">Bike</ion-button>
           </div>
+
+          <ion-list v-if="availableDrivers.length > 0">
+            <ion-item v-for="driver in availableDrivers" :key="driver.id">
+              <ion-avatar slot="start">
+                <img src="https://via.placeholder.com/50" alt="Driver Image" />
+              </ion-avatar>
+              <ion-label>
+                <h2 style="color:white; ">{{ driver.name }}</h2>
+                <p style="color:white; ">{{ driver.vehicle.brand }} - {{ driver.vehicle.model }} ({{ driver.vehicle.plate }})</p>
+              </ion-label>
+              <ion-button color="primary" @click="selectDriver(driver)">Select</ion-button>
+            </ion-item>
+          </ion-list>
         </ion-card-content>
 
       </ion-card>
+
     </ion-content>
   </ion-page>
 </template>
@@ -40,10 +54,15 @@
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonButton, IonIcon
+  IonButton, IonIcon, IonList, IonItem, IonAvatar, IonLabel
 } from "@ionic/vue";
 import { notificationsOutline } from "ionicons/icons";
 import { ref, onMounted } from "vue";
+import axios from 'axios';
+
+const API_URL = "http://127.0.0.1:8000/api";
+const availableDrivers = ref([]);
+
 
 const destination = ref("");
 const fare = ref("0.00");
@@ -81,14 +100,14 @@ const initMap = () => {
   });
 };
 
-const checkPath = (vehicleType) => {
+const checkPath = async (vehicleType) => { // Add 'async' here
   if (!currentPosition || !destination.value) {
     console.log("Current location or destination not available.");
     return;
   }
 
   const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: destination.value }, (results, status) => {
+  geocoder.geocode({ address: destination.value }, async (results, status) => { // Ensure async here if needed
     if (status === google.maps.GeocoderStatus.OK) {
       const destinationLocation = results[0].geometry.location;
 
@@ -96,11 +115,19 @@ const checkPath = (vehicleType) => {
       destinationMarker = new google.maps.Marker({ position: destinationLocation, map, title: "Destination" });
       drawRoute(currentPosition, destinationLocation);
       calculateFare(currentPosition, destinationLocation, vehicleType);
+
+      try {
+        const response = await axios.get(`${API_URL}/drivers/${vehicleType}`);
+        availableDrivers.value = response.data;
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
     } else {
       console.log("Geocode failed: " + status);
     }
   });
 };
+
 
 const drawRoute = (origin, destination) => {
   directionsService.route({ origin, destination, travelMode: google.maps.TravelMode.DRIVING }, (result, status) => {
