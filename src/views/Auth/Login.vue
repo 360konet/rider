@@ -109,7 +109,7 @@ const handleLogin = async () => {
       console.log("User ID:", response.user.id); // Log user ID to check
     }
 
-    router.push('/tabs/tab1'); // Redirect after successful login
+    router.push(`/tabs/tab1/${response.user.id}`);
   } catch (error: any) {
     errorMessage.value = error.message || 'Login went wrong!';
   } finally {

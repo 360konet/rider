@@ -59,18 +59,25 @@ import {
 import { notificationsOutline } from "ionicons/icons";
 import { ref, onMounted } from "vue";
 import axios from 'axios';
+import { useRoute } from 'vue-router';
+
 
 const API_URL = "http://127.0.0.1:8000/api";
-const availableDrivers = ref([]);
+const availableDrivers = ref([]); 
 
 
 const destination = ref("");
 const fare = ref("0.00");
+const route = useRoute();
+const userId = ref(route.params.userId);
 let map, currentPosition = null, userMarker = null, destinationMarker = null;
 let autocomplete, directionsService, directionsRenderer, distanceMatrixService;
 
 onMounted(() => {
   initMap();
+
+  userId.value = (route.query.userId || localStorage.getItem('userId')) ?? "";
+  console.log("User ID in Booking Page:", userId.value);
 });
 
 const initMap = () => {
@@ -99,6 +106,33 @@ const initMap = () => {
     }
   });
 };
+
+
+const selectDriver = async (driver) => {
+  if (!currentPosition || !destination.value) {
+    alert("Please select a valid destination.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}/book-ride`, {
+      user_id: userId.value, 
+      driver_id: driver.id,
+      vehicle_type: driver.vehicle.type,
+      source: JSON.stringify(currentPosition),  // Store current location
+      destination: destination.value,          // Store destination address
+    });
+
+    console.log(response.data);
+    alert('Ride booked successfully');
+  } catch (error) {
+    console.error('Error booking ride:', error);
+  }
+};
+
+
+
+
 
 const checkPath = async (vehicleType) => { // Add 'async' here
   if (!currentPosition || !destination.value) {

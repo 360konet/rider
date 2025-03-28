@@ -9,22 +9,25 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/tabs/',
-    component: TabsPage,
+    component: () => import('@/views/TabsPage.vue'),
     children: [
       {
         path: '',
-        redirect: '/tabs/tab1'
+        redirect: (to) => {
+          const userId = localStorage.getItem("userId") || "defaultUser";
+          return `/tabs/tab1/${userId}`;
+        }
       },
       {
-        path: 'tab1',
+        path: 'tab1/:userId',
         component: () => import('@/views/Home.vue')
       },
       {
-        path: 'tab2',
+        path: 'tab2/:userId',
         component: () => import('@/views/History.vue')
       },
       {
-        path: 'tab3/:id',
+        path: 'tab3/:userId',
         component: () => import('@/views/Profile.vue')
       }
     ]
