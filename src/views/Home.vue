@@ -119,8 +119,9 @@ const selectDriver = async (driver) => {
       user_id: userId.value, 
       driver_id: driver.id,
       vehicle_type: driver.vehicle.type,
-      source: JSON.stringify(currentPosition),  // Store current location
-      destination: destination.value,          // Store destination address
+      source: JSON.stringify(currentPosition), 
+      destination: destination.value,     
+      amount: fare.value,     
     });
 
     console.log(response.data);
