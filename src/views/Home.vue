@@ -42,6 +42,18 @@
               <ion-button color="primary" @click="selectDriver(driver)">Select</ion-button>
             </ion-item>
           </ion-list>
+
+          <ion-card v-if="rideStatus && rideStatus !== 'No Ride'">
+            <ion-card-header>
+              <ion-card-title style="color:white">Status: {{ rideStatus }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p style="color:white" v-if="rideStatus === 'Accepted'">Your driver, {{ driverName }}, is on the way.</p>
+              <p style="color:white" v-if="rideStatus === 'OnRide'">Your ride has started.</p>
+              <p style="color:white" v-if="rideStatus === 'Completed'">Ride completed. Thank you!</p>
+            </ion-card-content>
+          </ion-card>
+
         </ion-card-content>
 
       </ion-card>
@@ -57,7 +69,7 @@ import {
   IonButton, IonIcon, IonList, IonItem, IonAvatar, IonLabel
 } from "@ionic/vue";
 import { notificationsOutline } from "ionicons/icons";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 
@@ -72,6 +84,10 @@ const route = useRoute();
 const userId = ref(route.params.userId);
 let map, currentPosition = null, userMarker = null, destinationMarker = null;
 let autocomplete, directionsService, directionsRenderer, distanceMatrixService;
+const rideStatus = ref("No Ride");
+const driverName = ref("");
+const pollingInterval = ref(null);
+
 
 onMounted(() => {
   initMap();
@@ -128,6 +144,20 @@ const selectDriver = async (driver) => {
     alert('Ride booked successfully');
   } catch (error) {
     console.error('Error booking ride:', error);
+  }
+};
+
+
+
+// Function to check ride status
+const fetchRideStatus = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/ride-status/${userId.value}`);
+    rideStatus.value = response.data.status;
+    driverName.value = response.data.driver;
+  } catch (error) {
+    rideStatus.value = "No Ride";
+    driverName.value = "";
   }
 };
 
@@ -210,6 +240,19 @@ const calculateFare = (origin, destination, vehicleType) => {
     }
   );
 };
+
+
+onMounted(() => {
+  fetchRideStatus();
+  pollingInterval.value = setInterval(fetchRideStatus, 3000);
+});
+
+// Cleanup when component is unmounted
+onUnmounted(() => {
+  if (pollingInterval.value) {
+    clearInterval(pollingInterval.value);
+  }
+});
 </script>
 
 <style scoped>

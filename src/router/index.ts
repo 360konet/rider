@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '../views/TabsPage.vue'
+import TabsPage from '../views/TabsPage.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -9,11 +9,11 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/tabs/',
-    component: () => import('@/views/TabsPage.vue'),
+    component: TabsPage,
     children: [
       {
         path: '',
-        redirect: (to) => {
+        redirect: () => {
           const userId = localStorage.getItem("userId") || "defaultUser";
           return `/tabs/tab1/${userId}`;
         }
@@ -32,22 +32,19 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
-
   {
     path: '/login',
     component: () => import('@/views/Auth/Login.vue')
   },
-
   {
     path: '/register',
     component: () => import('@/views/Auth/Register.vue')
-  },
-
-]
+  }
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});
 
-export default router
+export default router;
