@@ -39,6 +39,11 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/register',
     component: () => import('@/views/Auth/Register.vue')
+  },
+  {
+    path: '/chat/:driverId',
+    component: () => import('@/views/Chat.vue'),
+    name: 'Chat'
   }
 ];
 

@@ -20,17 +20,18 @@
         </ion-card-header>
 
         <ion-card-content>
-          <div class="input-wrapper">
+          <!-- Conditionally hide input and button group when status is "Pending", "Accepted", or "OnRide" -->
+          <div class="input-wrapper" v-if="!['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
             <input id="destination-input" type="text" placeholder="Enter your destination" class="input-field" />
           </div>
         
-          <!-- Wrap buttons in a div with class "button-group" -->
-          <div class="button-group">
+          <div class="button-group" v-if="!['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
             <ion-button @click="checkPath('car')">Car</ion-button>
             <ion-button @click="checkPath('bike')">Bike</ion-button>
           </div>
 
-          <ion-list v-if="availableDrivers.length > 0">
+          <!-- Show drivers list only if no driver is selected and status is not "Pending", "Accepted", or "OnRide" -->
+          <ion-list v-if="!selectedDriver && availableDrivers.length > 0 && !['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
             <ion-item v-for="driver in availableDrivers" :key="driver.id">
               <ion-avatar slot="start">
                 <img src="https://via.placeholder.com/50" alt="Driver Image" />
@@ -43,24 +44,37 @@
             </ion-item>
           </ion-list>
 
-          <ion-card v-if="rideStatus && rideStatus !== 'No Ride'">
+          <!-- Show status section if a ride is booked -->
+          <ion-card v-if="rideStatus && rideStatus !== 'No Ride'" style="background-color: white;">
             <ion-card-header>
-              <ion-card-title style="color:white">Status: {{ rideStatus }}</ion-card-title>
+              <ion-card-title style="color:black">Status: {{ rideStatus }}</ion-card-title>
             </ion-card-header>
             <ion-card-content>
-              <p style="color:white" v-if="rideStatus === 'Accepted'">Your driver, {{ driverName }}, is on the way.</p>
-              <p style="color:white" v-if="rideStatus === 'OnRide'">Your ride has started.</p>
-              <p style="color:white" v-if="rideStatus === 'Completed'">Ride completed. Thank you!</p>
+              <p style="color:black" v-if="rideStatus === 'Accepted'">Your driver, {{ driverName }}, is on the way.</p>
+              <p style="color:black" v-if="rideStatus === 'OnRide'">Your ride has started.</p>
+              <p style="color:black" v-if="rideStatus === 'Completed'">Ride completed. Thank you!</p>
             </ion-card-content>
           </ion-card>
 
+          <!-- Show Call and Chat buttons only when the ride is accepted -->
+          <div v-if="rideStatus === 'Accepted'">
+            <ion-button color="secondary" @click="makeCall(driverName)" style="margin-top: 10px;">
+              <ion-icon :icon="callOutline" slot="start" />
+              Call Driver
+            </ion-button>
+
+            <ion-button color="primary" @click="startChat(driverName)" style="margin-top: 10px;">
+              <ion-icon :icon="chatbubbleOutline" slot="start" />
+              Chat Driver
+            </ion-button>
+          </div>
         </ion-card-content>
-
       </ion-card>
-
     </ion-content>
   </ion-page>
 </template>
+
+
 
 <script setup>
 import {
@@ -68,11 +82,11 @@ import {
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonButton, IonIcon, IonList, IonItem, IonAvatar, IonLabel
 } from "@ionic/vue";
-import { notificationsOutline } from "ionicons/icons";
 import { ref, onMounted, onUnmounted } from "vue";
 import axios from 'axios';
 import { useRoute } from 'vue-router';
-
+import { notificationsOutline, callOutline, chatbubbleOutline } from "ionicons/icons"; // Import necessary icons
+import { useRouter } from 'vue-router';
 
 const API_URL = "http://127.0.0.1:8000/api";
 const availableDrivers = ref([]); 
@@ -87,6 +101,30 @@ let autocomplete, directionsService, directionsRenderer, distanceMatrixService;
 const rideStatus = ref("No Ride");
 const driverName = ref("");
 const pollingInterval = ref(null);
+
+
+const makeCall = (driver) => {
+  const driverPhone = driver.phoneNumber; // Ensure this field is populated correctly from the API
+  if (driverPhone) {
+    window.location.href = `tel:${driverPhone}`; // Open phone dialer with the driver's number
+  } else {
+    alert('Driver phone number is not available.');
+  }
+};
+
+const router = useRouter();  // Make sure the router is initialized here
+
+const startChat = (driver) => {
+  console.log(driver); // Check if driver contains the 'id' field
+  if (driver && driver.id) {
+    router.push({ name: 'Chat', params: { driverId: driver.id } });
+  } else {
+    console.error('Driver ID is missing:', driver);
+    alert('Unable to start chat. Driver ID is missing.');
+  }
+};
+
+
 
 
 onMounted(() => {
@@ -132,20 +170,21 @@ const selectDriver = async (driver) => {
 
   try {
     const response = await axios.post(`${API_URL}/book-ride`, {
-      user_id: userId.value, 
+      user_id: userId.value,
       driver_id: driver.id,
       vehicle_type: driver.vehicle.type,
-      source: JSON.stringify(currentPosition), 
-      destination: destination.value,     
-      amount: fare.value,     
+      source: JSON.stringify(currentPosition),
+      destination: destination.value,
+      amount: fare.value,
     });
-
     console.log(response.data);
     alert('Ride booked successfully');
   } catch (error) {
     console.error('Error booking ride:', error);
   }
 };
+
+
 
 
 
