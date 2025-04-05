@@ -63,7 +63,7 @@
               Call Driver
             </ion-button>
 
-            <ion-button color="primary" @click="startChat(driverName)" style="margin-top: 10px;">
+            <ion-button color="primary" @click="startChat(driverData)">
               <ion-icon :icon="chatbubbleOutline" slot="start" />
               Chat Driver
             </ion-button>
@@ -90,6 +90,7 @@ import { useRouter } from 'vue-router';
 
 const API_URL = "http://127.0.0.1:8000/api";
 const availableDrivers = ref([]); 
+const driverData = ref(null); // this will hold the full driver object
 
 
 const destination = ref("");
@@ -115,12 +116,17 @@ const makeCall = (driver) => {
 const router = useRouter();  // Make sure the router is initialized here
 
 const startChat = (driver) => {
-  console.log(driver); // Check if driver contains the 'id' field
-  if (driver && driver.id) {
-    router.push({ name: 'Chat', params: { driverId: driver.id } });
+  if (driver && driver.id && driver.ride_id) {
+    router.push({ 
+      name: 'Chat', 
+      params: { 
+        driverId: driver.id, 
+        rideId: driver.ride_id 
+      } 
+    });
   } else {
-    console.error('Driver ID is missing:', driver);
-    alert('Unable to start chat. Driver ID is missing.');
+    console.error('Driver ID or Ride ID is missing:', driver);
+    alert('Unable to start chat. Driver ID or Ride ID is missing.');
   }
 };
 
@@ -129,10 +135,12 @@ const startChat = (driver) => {
 
 onMounted(() => {
   initMap();
+  //userId.value = (route.query.userId || localStorage.getItem('userId')) ?? "";
+  userId.value = route.params.userId || localStorage.getItem('userId');
 
-  userId.value = (route.query.userId || localStorage.getItem('userId')) ?? "";
   console.log("User ID in Booking Page:", userId.value);
 });
+
 
 const initMap = () => {
   map = new google.maps.Map(document.getElementById("map"), {
@@ -178,13 +186,13 @@ const selectDriver = async (driver) => {
       amount: fare.value,
     });
     console.log(response.data);
+    rideStatus.value = 'Pending'; // Adjust this based on response status
     alert('Ride booked successfully');
+    rideId.value = response.data.ride_id; // Store ride ID from the response for accountability
   } catch (error) {
     console.error('Error booking ride:', error);
   }
 };
-
-
 
 
 
@@ -193,12 +201,19 @@ const fetchRideStatus = async () => {
   try {
     const response = await axios.get(`${API_URL}/ride-status/${userId.value}`);
     rideStatus.value = response.data.status;
-    driverName.value = response.data.driver;
+    
+    // Full driver object
+    driverData.value = response.data.driver;
+
+    // Optional: name for display
+    driverName.value = response.data.driver.name;
   } catch (error) {
     rideStatus.value = "No Ride";
+    driverData.value = null;
     driverName.value = "";
   }
 };
+
 
 
 

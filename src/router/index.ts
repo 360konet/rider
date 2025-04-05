@@ -41,10 +41,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Auth/Register.vue')
   },
   {
-    path: '/chat/:driverId',
+    path: '/chat/:driverId/:rideId',
     component: () => import('@/views/Chat.vue'),
     name: 'Chat'
   }
+  
 ];
 
 const router = createRouter({
