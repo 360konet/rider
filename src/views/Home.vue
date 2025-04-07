@@ -20,21 +20,22 @@
         </ion-card-header>
 
         <ion-card-content>
-          <!-- Conditionally hide input and button group when status is "Pending", "Accepted", or "OnRide" -->
-          <div class="input-wrapper" v-if="!['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
+          <!-- Conditionally hide input and button group when status is "Pending", "Accepted", "OnRide" -->
+          <div class="input-wrapper" v-if="!['Pending', 'Accepted', 'OnRide', 'Completed'].includes(rideStatus)">
             <input id="destination-input" type="text" placeholder="Enter your destination" class="input-field" />
           </div>
-        
-          <div class="button-group" v-if="!['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
+          
+          <div class="button-group" v-if="!['Pending', 'Accepted', 'OnRide', 'Completed'].includes(rideStatus)">
             <ion-button @click="checkPath('car')">Car</ion-button>
             <ion-button @click="checkPath('bike')">Bike</ion-button>
           </div>
+
 
           <!-- Show drivers list only if no driver is selected and status is not "Pending", "Accepted", or "OnRide" -->
           <ion-list v-if="!selectedDriver && availableDrivers.length > 0 && !['Pending', 'Accepted', 'OnRide'].includes(rideStatus)">
             <ion-item v-for="driver in availableDrivers" :key="driver.id">
               <ion-avatar slot="start">
-                <img src="https://via.placeholder.com/50" alt="Driver Image" />
+                <img src="/img/user.jpg" alt="Driver Image" />
               </ion-avatar>
               <ion-label>
                 <h2 style="color:white; ">{{ driver.name }}</h2>
@@ -156,8 +157,12 @@ const initMap = () => {
       currentPosition = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setCenter(currentPosition);
       userMarker = new google.maps.Marker({ position: currentPosition, map, title: "Your Location" });
+    }, (error) => {
+      console.error("Geolocation error:", error);
+      alert("Please enable location services.");
     });
   }
+
 
   const destinationInput = document.getElementById("destination-input");
   autocomplete = new google.maps.places.Autocomplete(destinationInput, { types: ["geocode"] });
@@ -207,6 +212,12 @@ const fetchRideStatus = async () => {
 
     // Optional: name for display
     driverName.value = response.data.driver.name;
+
+    // Check if ride is completed, then refresh the page
+    if (rideStatus.value === "Completed") {
+      alert("Ride completed. Refreshing the screen...");
+      window.location.reload(); // Force refresh
+    }
   } catch (error) {
     rideStatus.value = "No Ride";
     driverData.value = null;
@@ -214,8 +225,10 @@ const fetchRideStatus = async () => {
   }
 };
 
-
-
+onMounted(() => {
+  fetchRideStatus();
+  pollingInterval.value = setInterval(fetchRideStatus, 3000);
+});
 
 
 
