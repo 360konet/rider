@@ -96,7 +96,7 @@ const fetchRideHistory = async () => {
   error.value = "";
 
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/rides/${userId}`, {
+    const response = await axios.get(`https://dririd.nxtremeprojectnew.com/api/rides/${userId}`, {
       params: { from: from.value, to: to.value }
     });
 

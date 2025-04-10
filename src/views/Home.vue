@@ -89,7 +89,7 @@ import { useRoute } from 'vue-router';
 import { notificationsOutline, callOutline, chatbubbleOutline } from "ionicons/icons"; // Import necessary icons
 import { useRouter } from 'vue-router';
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = "https://dririd.nxtremeprojectnew.com/api";
 const availableDrivers = ref([]); 
 const driverData = ref(null); // this will hold the full driver object
 
